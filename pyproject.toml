@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "file-upload-validation-analyzer"
+version = "0.1.0"
+description = "Comprehensive tool for testing and analyzing file upload validation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Security Research Team"}
+]
+keywords = ["security", "file-upload", "penetration-testing", "vulnerability-scanner"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: Software Development :: Testing",
+]
+
+dependencies = [
+    "requests>=2.31.0",
+    "python-magic>=0.4.27",
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "jinja2>=3.1.3",
+    "python-multipart>=0.0.6",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.12.0",
+    "flake8>=7.0.0",
+    "mypy>=1.8.0",
+]
+optional = [
+    "aiofiles>=23.2.1",
+    "pandas>=2.1.0",
+    "matplotlib>=3.8.0",
+]
+
+[project.scripts]
+fuva = "cli.main:main"
+fuva-web = "web.main:main"
+
+[project.urls]
+Homepage = "https://github.com/Sexigt/fuva"
+Repository = "https://github.com/Sexigt/fuva"
+Issues = "https://github.com/Sexigt/fuva/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cli*", "web*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+include = '\.pyi?$'
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

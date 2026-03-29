@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results Interpretation - FUVA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --border: #e5e7eb;
+        }
+        
+        [data-theme="dark"] {
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --error: #f87171;
+            --text: #f3f4f6;
+            --text-light: #9ca3af;
+            --bg: #111827;
+            --card-bg: #1f2937;
+            --border: #374151;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            position: relative;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        [data-theme="dark"] .theme-toggle {
+            background: rgba(0,0,0,0.3);
+        }
+        
+        .header h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 2rem;
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .nav a:hover, .nav a.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        
+        .card h3 {
+            font-size: 1.1rem;
+            margin: 1.5rem 0 0.5rem;
+            color: var(--text);
+        }
+        
+        .severity {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+        
+        .severity-critical { background: #fee2e2; color: #dc2626; }
+        .severity-high { background: #ffedd5; color: #ea580c; }
+        .severity-medium { background: #fef3c7; color: #d97706; }
+        .severity-low { background: #dbeafe; color: #2563eb; }
+        .severity-info { background: #e0e7ff; color: #4f46e5; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg);
+            font-weight: 600;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        ul, ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+        
+        li {
+            margin: 0.5rem 0;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: 1rem;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .highlight-box {
+            background: var(--bg);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+    
+    <div class="header">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"><i class="fas fa-moon"></i></button>
+        <h1><i class="fas fa-search-plus"></i> Understanding Your Results</h1>
+        <p>How to interpret FUVA test results and recommendations</p>
+    </div>
+    
+    <div class="container">
+        <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        
+        <div class="card">
+            <h2><i class="fas fa-chart-pie"></i> Dashboard Overview</h2>
+            <p>The dashboard shows summary statistics from all your tests:</p>
+            <ul>
+                <li><strong>Total Runs</strong> - Number of test sessions you've run</li>
+                <li><strong>Completed</strong> - Tests that finished successfully</li>
+                <li><strong>Tests Run</strong> - Total individual file uploads</li>
+                <li><strong>Anomalies</strong> - Security issues detected</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-exclamation-triangle"></i> Understanding Anomalies</h2>
+            <p>Anomalies are potential security issues found during testing. They are categorized by severity:</p>
+            
+            <h3>Severity Levels</h3>
+            <table>
+                <tr>
+                    <td><span class="severity severity-critical">CRITICAL</span></td>
+                    <td>Immediate security risk. Dangerous file was accepted.</td>
+                </tr>
+                <tr>
+                    <td><span class="severity severity-high">HIGH</span></td>
+                    <td>Significant security issue that needs attention.</td>
+                </tr>
+                <tr>
+                    <td><span class="severity severity-medium">MEDIUM</span></td>
+                    <td>Moderate risk, should be addressed.</td>
+                </tr>
+                <tr>
+                    <td><span class="severity severity-low">LOW</span></td>
+                    <td>Minor issue, may not require immediate action.</td>
+                </tr>
+                <tr>
+                    <td><span class="severity severity-info">INFO</span></td>
+                    <td>Informational, no immediate action needed.</td>
+                </tr>
+            </table>
+            
+            <h3>Types of Anomalies</h3>
+            <table>
+                <tr>
+                    <td><strong>Security</strong></td>
+                    <td>Dangerous files accepted, exploit patterns detected</td>
+                </tr>
+                <tr>
+                    <td><strong>Performance</strong></td>
+                    <td>Slow response times, timeouts</td>
+                </tr>
+                <tr>
+                    <td><strong>Validation</strong></td>
+                    <td>Missing or weak file validation</td>
+                </tr>
+                <tr>
+                    <td><strong>Configuration</strong></td>
+                    <td>Server misconfiguration detected</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-file-alt"></i> Test File Categories</h2>
+            <p>FUVA tests your upload endpoint with these categories of files:</p>
+            
+            <h3>Images</h3>
+            <ul>
+                <li>Corrupt PNG/JPEG - Files with broken headers</li>
+                <li>Large Metadata - Images with excessive EXIF data</li>
+                <li>Wrong MIME - Images with incorrect content-type</li>
+                <li>Empty Image - Zero-byte image files</li>
+                <li>Giant Image - Extremely large image dimensions</li>
+            </ul>
+            
+            <h3>Documents</h3>
+            <ul>
+                <li>Malformed PDF - PDFs with broken structure</li>
+                <li>SVG with XSS - SVG files containing scripts</li>
+                <li>PDF with JavaScript - PDFs with embedded scripts</li>
+                <li>RTF exploits - Rich Text Format vulnerabilities</li>
+                <li>Office with macros - Word/Excel with VBA macros</li>
+            </ul>
+            
+            <h3>Archives</h3>
+            <ul>
+                <li>Zip Slip - Archives with path traversal</li>
+                <li>Archive Bombs - Highly compressed files (ZIP, 7z, XZ, BZ2)</li>
+                <li>Nested Archives - Multi-level nested archives</li>
+                <li>Symlink Archives - Archives with symbolic links</li>
+                <li>Web Shell Archives - Archives containing backdoors</li>
+            </ul>
+            
+            <h3>Executables</h3>
+            <ul>
+                <li>Fake EXE/ELF - Executables with wrong extensions</li>
+                <li>Double Extensions - file.txt.exe</li>
+                <li>Null Byte Injection - file.php%00.jpg</li>
+            </ul>
+            
+            <h3>Other Tests</h3>
+            <ul>
+                <li>Polyglot Files - Files that are multiple types</li>
+                <li>XXE - XML External Entity attacks</li>
+                <li>Serialization Attacks - Python/PHP pickle exploits</li>
+                <li>Command Injection - Files with shell commands</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-check-circle"></i> Status Codes Explained</h2>
+            
+            <h3>Success Codes (Good)</h3>
+            <ul>
+                <li><strong>200 OK</strong> - Request succeeded</li>
+                <li><strong>201 Created</strong> - File was uploaded and stored</li>
+            </ul>
+            
+            <h3>Error Codes (Usually Good)</h3>
+            <ul>
+                <li><strong>400 Bad Request</strong> - Validation caught the file</li>
+                <li><strong>403 Forbidden</strong> - Access denied</li>
+                <li><strong>413 Payload Too Large</strong> - Size limit enforced</li>
+                <li><strong>415 Unsupported Media Type</strong> - File type blocked</li>
+            </ul>
+            
+            <h3>Error Codes (Warning)</h3>
+            <ul>
+                <li><strong>200 OK</strong> for dangerous files - VULNERABILITY!</li>
+                <li><strong>500 Server Error</strong> - Possible crash/bug</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-lightbulb"></i> Recommendations</h2>
+            
+            <h3>If dangerous files are accepted:</h3>
+            <ol>
+                <li>Implement content-based file type detection (not just extension)</li>
+                <li>Use magic byte/mime type validation</li>
+                <li>Store files outside web root</li>
+                <li>Rename uploaded files to random names</li>
+                <li>Set proper file permissions</li>
+            </ol>
+            
+            <h3>If validation is weak:</h3>
+            <ol>
+                <li>Implement server-side validation (never trust client)</li>
+                <li>Check file headers, not just extensions</li>
+                <li>Limit file size</li>
+                <li>Use allowlists instead of blocklists</li>
+            </ol>
+            
+            <h3>If you see errors:</h3>
+            <ol>
+                <li>Check server logs</li>
+                <li>Review error messages for information disclosure</li>
+                <li>Implement proper error handling</li>
+            </ol>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-balance-scale"></i> Comparing Results</h2>
+            <p>Use the comparison feature to:</p>
+            <ul>
+                <li>Compare results before/after security fixes</li>
+                <li>Test different upload endpoints</li>
+                <li>Verify configuration changes</li>
+            </ul>
+            <div class="highlight-box">
+                <strong>Tip:</strong> Select two runs from the Recent Runs table and click "Compare Selected" to see the differences.
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-download"></i> Export Formats</h2>
+            <p>FUVA provides multiple export formats:</p>
+            <ul>
+                <li><strong>HTML Report</strong> - Visual report with charts (click "View")</li>
+                <li><strong>JSON Report</strong> - Machine-readable data</li>
+                <li><strong>CSV Export</strong> - Spreadsheet compatible</li>
+            </ul>
+            <p>CSV export: Add <code>?format=csv</code> to the report URL.</p>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-shield-alt"></i> Security Best Practices</h2>
+            <ol>
+                <li><strong>Never trust client-side validation</strong> - Always validate on server</li>
+                <li><strong>Use allowlists</strong> - Only allow known-good types</li>
+                <li><strong>Store outside webroot</strong> - Don't serve uploaded files directly</li>
+                <li><strong>Randomize filenames</strong> - Prevent path traversal</li>
+                <li><strong>Scan for malware</strong> - Use antivirus on uploaded files</li>
+                <li><strong>Limit size</strong> - Prevent denial of service</li>
+                <li><strong>Log and monitor</strong> - Track upload activity</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        function toggleTheme() {
+            var html = document.documentElement;
+            var current = html.getAttribute('data-theme');
+            var btn = document.querySelector('.theme-toggle i');
+            if (current === 'dark') {
+                html.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                btn.className = 'fas fa-moon';
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                btn.className = 'fas fa-sun';
+            }
+        }
+        
+        (function() {
+            var saved = localStorage.getItem('theme');
+            if (saved === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.querySelector('.theme-toggle i').className = 'fas fa-sun';
+            }
+        })();
+    </script>
+</body>
+</html>

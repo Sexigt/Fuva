@@ -1,0 +1,30 @@
+[Unit]
+Description=File Upload Validation Analyzer (FUVA)
+Documentation=https://github.com/Sexigt/fuva
+After=network.target
+
+[Service]
+Type=simple
+User=fuva
+Group=fuva
+WorkingDirectory=/opt/fuva
+ExecStart=/usr/bin/python3 /opt/fuva/web/main.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Environment variables
+Environment=PYTHONUNBUFFERED=1
+Environment=PORT=8000
+
+# Directories
+RuntimeDirectory=fuva
+RuntimeDirectoryMode=0755
+LogsDirectory=fuva
+LogsDirectoryMode=0755
+StateDirectory=fuva
+StateDirectoryMode=0755
+
+[Install]
+WantedBy=multi-user.target

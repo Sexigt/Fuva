@@ -1,0 +1,93 @@
+# Public Code - Metadata for Italian Developers
+# https://docs.italia.it/developers-italia/public-code/
+
+publiccodeYversion: "0.2"
+
+name: File Upload Validation Analyzer
+slug: file-upload-validation-analyzer
+version: 0.1.0
+version_dev: 0.1.0
+
+releaseDate: "2026-03-29"
+
+platforms:
+  - web
+  - cli
+
+categories:
+  - security
+  - testing
+  - vulnerability-scanner
+
+description:
+  en: |
+    A comprehensive tool for testing and analyzing file upload validation
+    in web applications. Automatically generates test files and analyzes
+    server responses to identify security issues and validation gaps.
+  it: |
+    Uno strumento completo per testare e analizzare la validazione degli
+    upload di file nelle applicazioni web. Genera automaticamente file di
+    test e analizza le risposte del server per identificare problemi di
+    sicurezza e lacune nella validazione.
+
+tags:
+  - security
+  - penetration-testing
+  - file-upload
+  - vulnerability-scanning
+  - python
+  - fastapi
+  - cli-tool
+
+legal:
+  license: MIT
+  mainCopyrightOwner: Security Research Team
+
+maintenance:
+  type: community
+  contacts:
+    - name: Security Research Team
+
+localisation:
+  availableLanguages:
+    - en
+
+inputTypes:
+  - text/uri-list
+  - application/x-www-form-urlencoded
+
+outputTypes:
+  - application/json
+  - text/html
+
+installations:
+  cli:
+    requirements:
+      - python >= "3.10"
+      - requests >= "2.31.0"
+      - python-magic >= "0.4.27"
+    installation: |
+      pip install -r requirements.txt
+      python -m cli.main --help
+
+  web:
+    requirements:
+      - python >= "3.10"
+      - fastapi >= "0.109.0"
+      - uvicorn >= "0.27.0"
+    installation: |
+      pip install -r requirements.txt
+      python -m web.main
+
+isBasedOn:
+  - python
+  - requests
+  - fastapi
+
+roadmap: |
+  - Add more file generators (Office documents)
+  - Implement concurrent upload testing
+  - Add authentication support
+  - Create plugin system for custom generators
+
+status: development

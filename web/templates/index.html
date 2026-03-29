@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}{{ app_name }} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Run New Test</h2>
+    <form id="runForm" hx-post="/api/run" hx-target="#runResult" hx-swap="innerHTML">
+        <div class="form-group">
+            <label for="target_url">Target Upload URL</label>
+            <input type="url" id="target_url" name="target_url" placeholder="https://example.com/upload" required>
+        </div>
+        <div class="form-group">
+            <label for="timeout">Timeout (seconds)</label>
+            <input type="number" id="timeout" name="timeout" value="30" min="1" max="300">
+        </div>
+        <div class="form-group">
+            <label for="delay">Delay between requests (seconds)</label>
+            <input type="number" id="delay" name="delay" value="0" min="0" step="0.1">
+        </div>
+        <div class="form-group">
+            <label for="form_field">Form Field Name</label>
+            <input type="text" id="form_field" name="form_field" value="file">
+        </div>
+        <div class="form-group">
+            <label>Report Formats</label>
+            <div>
+                <label>
+                    <input type="checkbox" name="generate_html" checked> HTML
+                </label>
+                <label style="margin-left: 1rem;">
+                    <input type="checkbox" name="generate_json" checked> JSON
+                </label>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Start Test</button>
+        <span id="runResult"></span>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Statistics</h2>
+    <div id="stats" hx-get="/api/stats" hx-trigger="load">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">-</div>
+                <div class="stat-label">Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Recent Runs</h2>
+    <div id="runsList" hx-get="/api/runs" hx-trigger="load, every 10s">
+        <p>Loading runs...</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>How It Works</h2>
+    <p>This tool automatically tests file upload endpoints by:</p>
+    <ol style="margin: 1rem 0 0 1.5rem; line-height: 2;">
+        <li>Generating various test files (corrupted images, malicious documents, etc.)</li>
+        <li>Uploading each file to the target URL</li>
+        <li>Analyzing server responses for security issues</li>
+        <li>Comparing API vs UI validation</li>
+        <li>Generating detailed HTML and JSON reports</li>
+    </ol>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateStats() {
+        fetch('/api/stats')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('stats').innerHTML = `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${data.total_runs || 0}</div>
+                            <div class="stat-label">Total Runs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${data.completed_runs || 0}</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${data.total_tests || 0}</div>
+                            <div class="stat-label">Total Tests</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${data.total_anomalies || 0}</div>
+                            <div class="stat-label">Anomalies</div>
+                        </div>
+                    </div>
+                `;
+            });
+    }
+    
+    function updateRuns() {
+        fetch('/api/runs')
+            .then(r => r.json())
+            .then(runs => {
+                if (runs.length === 0) {
+                    document.getElementById('runsList').innerHTML = '<p>No runs yet. Start a test above!</p>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>ID</th><th>Target</th><th>Status</th><th>Tests</th><th>Accepted</th><th>Rejected</th><th>Anomalies</th><th>Actions</th></tr></thead><tbody>';
+                
+                runs.forEach(run => {
+                    let statusBadge = '';
+                    if (run.status === 'completed') statusBadge = '<span class="badge badge-success">Completed</span>';
+                    else if (run.status === 'running') statusBadge = '<span class="badge badge-warning"><span class="spinner"></span> Running</span>';
+                    else if (run.status === 'failed') statusBadge = '<span class="badge badge-error">Failed</span>';
+                    else statusBadge = '<span class="badge badge-info">Pending</span>';
+                    
+                    html += `
+                        <tr>
+                            <td>${run.run_id}</td>
+                            <td>${run.target_url.substring(0, 30)}${run.target_url.length > 30 ? '...' : ''}</td>
+                            <td>${statusBadge}</td>
+                            <td>${run.total_tests}</td>
+                            <td class="status-success">${run.accepted}</td>
+                            <td class="status-error">${run.rejected}</td>
+                            <td>${run.anomalies}</td>
+                            <td>
+                                ${run.status === 'completed' ? `<a href="/report/${run.run_id}" class="btn btn-primary" style="font-size: 0.8rem;">View Report</a>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                document.getElementById('runsList').innerHTML = html;
+            });
+    }
+    
+    setInterval(updateStats, 5000);
+    setInterval(updateRuns, 5000);
+    
+    document.getElementById('runForm').addEventListener('htmx:afterRequest', function(e) {
+        updateRuns();
+    });
+</script>
+{% endblock %}

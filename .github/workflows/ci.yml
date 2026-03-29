@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+    
+    - name: Run CLI tests
+      run: |
+        python3 -m cli.main --help
+    
+    - name: Test imports
+      run: |
+        python3 -c "from cli.db import db; from cli.generators import *; from cli.analyzers import *"
+    
+    - name: Check syntax
+      run: |
+        python3 -m py_compile web/main.py cli/main.py
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker image
+      run: |
+        docker build -t fuva:test .
+    
+    - name: Test Docker container
+      run: |
+        docker run -d -p 8000:8000 --name fuva-test fuva:test
+        sleep 5
+        docker logs fuva-test
+        docker stop fuva-test

@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  fuva:
+    build: .
+    container_name: fuva
+    ports:
+      - "8000:8000"
+    volumes:
+      - fuva_data:/app/data
+      - fuva_reports:/app/reports
+      - fuva_logs:/app/logs
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  demo:
+    build: .
+    container_name: fuva-demo
+    command: python3 -c "from cli.demo_server import start_demo_server; start_demo_server(port=8001)"
+    ports:
+      - "8001:8001"
+    profiles:
+      - demo
+
+volumes:
+  fuva_data:
+  fuva_reports:
+  fuva_logs:
